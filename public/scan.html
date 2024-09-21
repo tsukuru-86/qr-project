@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>ドリンクスキャン</title>
+</head>
+<body>
+  <h1>ドリンクをスキャンしました！</h1>
+  <p id="stats">他のユーザー情報を取得中...</p>
+
+  <script>
+    // URLパラメータからdrink_idを取得
+    const urlParams = new URLSearchParams(window.location.search);
+    const drinkId = urlParams.get('drink_id');
+
+    // デバッグ用ログ
+    console.log('drinkId:', drinkId);
+
+    // ユーザーの位置情報を取得
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+
+        // デバッグ用ログ
+        console.log('Latitude:', latitude, 'Longitude:', longitude);
+
+        // サーバーにデータを送信
+        fetch('/api/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            drinkId,
+            location: {
+              type: 'Point',
+              coordinates: [longitude, latitude],
+            },
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log('Data saved:', data);
+            // 他のユーザー情報を取得して表示
+            return fetch('/api/stats');
+          })
+          .then((response) => response.json())
+          .then((data) => {
+            const p = document.getElementById('stats');
+            p.textContent = `本日、このドリンクを飲んだ人数: ${data.totalScansToday}人`;
+          })
+          .catch((error) => {
+            console.error('Error:', error);
+          });
+      },
+      (error) => {
+        console.error('位置情報の取得に失敗しました:', error);
+      }
+    );
+  </script>
+</body>
+</html>
