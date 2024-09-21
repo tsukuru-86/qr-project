@@ -30,9 +30,12 @@ mongoose.connection.on('error', (err) => {
 // ルートの設定
 const scanRoute = require('./routes/scan');
 const statsRoute = require('./routes/stats');
+const locationsRoute = require('./routes/locations');
+
 
 app.use('/api/scan', scanRoute);
 app.use('/api/stats', statsRoute);
+app.use('/api/locations', locationsRoute);
 app.use(express.static('public'));
 
 // サーバーの起動
