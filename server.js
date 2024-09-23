@@ -1,46 +1,47 @@
 // server.js
 const express = require('express');
+const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const mongoose = require('mongoose'); // ここでmongooseをインポート
+const path = require('path');
 
 const app = express();
 app.use(bodyParser.json());
 
 // データベースへの接続
-// mongoose.connect('mongodb+srv://tsukuru:PbL8yQFsCVdboYZ2@cluster0.a9jig.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
-//   // useNewUrlParser: true,
-//   // useUnifiedTopology: true,
-// });
-
 mongoose.connect('mongodb://localhost:27017/drinkQR', {
-  // useNewUrlParser: true,
-  // useUnifiedTopology: true,
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 });
 
-
-// データベースの接続状況を確認（オプション）
 mongoose.connection.on('connected', () => {
   console.log('MongoDBに接続しました');
 });
 
 mongoose.connection.on('error', (err) => {
-  console.log('MongoDBの接続エラー:', err);
+  console.error('MongoDBの接続エラー:', err);
 });
 
 // ルートの設定
 const scanRoute = require('./routes/scan');
 const statsRoute = require('./routes/stats');
 const locationsRoute = require('./routes/locations');
-
+const realTimeScansRoute = require('./routes/realTimeScans'); // 追加
 
 app.use('/api/scan', scanRoute);
 app.use('/api/stats', statsRoute);
 app.use('/api/locations', locationsRoute);
-app.use(express.static('public'));
+app.use('/api/real-time-scans', realTimeScansRoute); // 追加
+
+// 本番環境用の静的ファイルの提供
+app.use(express.static(path.join(__dirname, 'frontend', 'build')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'build', 'index.html'));
+});
 
 // サーバーの起動
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
   console.log(`サーバーはポート${PORT}で起動しています`);
 });

@@ -6,9 +6,6 @@ const Scan = require('../models/Scan');
 router.post('/', async (req, res) => {
   const { drinkId, location } = req.body;
 
-  // デバッグ用にログを追加
-  console.log('Received data:', req.body);
-
   const newScan = new Scan({
     drinkId,
     location,
